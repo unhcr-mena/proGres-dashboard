@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'>
+<meta content='width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0' name='viewport'>
+<meta property="og:title" content="RRP6 FINANCIAL TRACKING -JORDAN - 2014"/>
+<meta property="og:type" content="article"/>
+<meta property="og:site_name" content="RRP6 FINANCIAL TRACKING -JORDAN - 2014"/>
+<meta property="og:description" content="RRP6 FINANCIAL TRACKING -JORDAN - 2014"/>
+    <title>proGres Dashboard </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="css/bootstrap.min.css" media="screen">
+
+    <link rel="stylesheet" href="css/bootswatch.min.css">
+    <link rel="stylesheet" href="css/font-humanitarian.css">
+
+    <link rel="stylesheet" type="text/css" href="css/dc.css"/>
+
+    <link rel="stylesheet" type="text/css" href="css/dashboard.css"/>
+    <!---->
+    <!-- Add IntroJs styles and JS -->
+    <link rel="stylesheet" type="text/css" href="css/introjs.min.css" >
+    <script type="text/javascript" src="js/intro.min.js"></script>
+    <script src="js/jquery.js"></script>
+    <!-- map the data to the GeoJSON object -->
+    <script src="js/data-jo.js"></script>
+    <link href="http://www.unhcr.org/favicon.ico" rel="icon" type="image/x-icon">
+    <!-- hide and display Disclaimer -->
+  </head>
+
+  <body>
+    <div class="container" id="dashboard">
+    
+        <div class="socialmedia" data-step="13" data-intro="Share!!" data-position="left">
+            <table>
+              <tbody><tr>
+            </tr>
+            </tbody></table>
+        </div>
+        <div class="row" >
+             <h1>
+               <a href="http://data.unhcr.org/jordan"><img src="images/coordination.png" style="height: 48px; width: 48px"></a>
+               <strong>proGres Dashboard</strong>
+            </h1>
+                bababblal.
+
+            <h2> 
+            </h2>
+            <br>
+       </div>
+       <div class="row">
+            <div class="col-md-6">
+                     <div id="test"></div>
+            </div>
+            <div class="col-md-4">
+                    <div id="filter">></div>
+            </div>
+       </div>
+    </div>
+     <div width="100%" style="background:#006CA9; height:25px" align=right>
+        <span  class="demoTableRow"><font color="#FFFFFF">
+            Produced by UNHCR MENA Regional Protection Serices. For more information please contact <a href="http://data.unhcr.org/mena/team.html" target="_blank" >our team</a> </font>
+         </span> &nbsp;&nbsp;&nbsp;
+    </div>
+
+    <script type="text/javascript" src="js/d3.js"></script>
+    <script type="text/javascript" src="js/crossfilter.js"></script>
+    <script type="text/javascript" src="js/dc.js"></script>
+    <script type="text/javascript" src="js/d3.tip.min.js"></script>
+    <script type="text/javascript" src="js/d3num.js"></script>  
+    <script type="text/javascript">
+        
+        var chart = dc.pairedRowChart('#test');
+        var filter = dc.pieChart('#filter');
+        
+        d3.csv('data/paried-row-data.csv', function(error, experiments) {
+            var ndx = crossfilter(experiments),
+                ageGenderDimension = ndx.dimension(function(d) {
+                    var age_range = 'Unknown';
+                    if (d.age <= 9) { age_range = '0 - 9';} else 
+                    if (d.age <= 19) { age_range = '10 - 19'; } else 
+                    if (d.age <= 29) { age_range = '20 - 29'; } else 
+                    if (d.age <= 39) { age_range = '30 - 39'; } else
+                    if (d.age <= 49) { age_range = '40 - 49';} else
+                    if (d.age <= 59) { age_range = '50 - 59';} else 
+                    if (d.age <= 69) { age_range = '60 - 69';} else
+                    if (d.age <= 79) { age_range = '70 - 79'; } else
+                    if (d.age <= 89) { age_range = '80 - 89';} else 
+                    if (d.age <= 99) { age_range = '90 - 99';} else
+                    if (d.age >= 100) { age_range = '100+';}
+                    return [d.gender, age_range];
+                }),
+                ageGenderGroup = ageGenderDimension.group().reduceCount(),
+   
+                genderDimension = ndx.dimension(function(d) {return d.gender;}),
+                genderGroup = genderDimension.group().reduceCount();
+            
+            group = {
+                all: function() {
+                    var age_ranges = ['0 - 9', '10 - 19', '20 - 29', '30 - 39', '40 - 49', '50 - 59', '60 - 69', '70 - 79', '80 - 89', '90 - 99', '100+'];
+                    // convert to object so we can easily tell if a key exists
+                    var values = {};
+                    ageGenderGroup.all().forEach(function(d) {
+                        values[d.key[0] + '.' + d.key[1]] = d.value;
+                    });
+                    // convert back into an array for the chart, making sure that all age_ranges exist
+                    var g = [];
+                    age_ranges.forEach(function(age_range) {
+                        g.push({ key: ['Male', age_range], value: values['Male.' + age_range] || 0});
+                        g.push({ key: ['Female', age_range], value: values['Female.' + age_range] || 0 });
+                    });
+                    return g;
+                }
+            };
+            
+            chart.options({
+                // display
+                width: 400,
+                height: 400,
+                colorCalculator: function(d) { if (d.key[0] === 'Male') { return '#5A9BCA'; } return '#C95AC7'; },
+                renderTitleLabel: true,
+                title: function(d) { return d.key[1]; },
+                label: function(d) { return d.key[1]; },
+                // data
+                dimension: ageGenderDimension,
+                group: group,
+                // x axis
+                elasticX: true,
+                leftXAxisLabel: 'Male',
+                rightXAxisLabel: 'Female',
+                // new fields for paired row chart
+                leftKeyFilter: function(d) { return d.key[0] === 'Male'; },
+                rightKeyFilter: function(d) { return d.key[0] === 'Female';},
+            })
+            .render();
+            filter.options({
+                dimension: genderDimension,
+                group: genderGroup
+            })
+            .render();
+        });
+    </script>
+    <script src="js/bootstrap.js"></script>
+
+
+
+
+  </body>
+</html>
